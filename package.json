@@ -1,8 +1,10 @@
 {
   "name": "http-acl",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.0.2",
+  "description": "An ACL for HTTP requests.",
+  "main": "./dist/index.js",
+  "gitRepository": "https://github.com/ebadfd/http-acl",
+  "author": "ebadfd",
   "scripts": {
     "test": "tsc && jest ./dist"
   },
