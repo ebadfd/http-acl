@@ -86,7 +86,8 @@ export class HttpAcl {
     }
 
     isSchemeAllowed(scheme: String) {
-        if (scheme == "http" && this.allowHttp || scheme === "https" && this.allowHttps) {
+        if (scheme.startsWith("http") && this.allowHttp ||
+            scheme.startsWith("https") && this.allowHttps) {
             return this.result(AclClassification.AllowedUserAcl)
         }
         return this.result(AclClassification.DeniedUserAcl)
@@ -165,10 +166,19 @@ export class HttpAcl {
     isUrlAllowed(url: string) {
         const parsedUrl = new URL(url);
         const isHostAllowed = this.isHostAllowed(parsedUrl.host)
-        const isPortAllowed = this.isPortAllowed(Number(parsedUrl.port))
+
+        const isPortAllowed = (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:')
+            ? (parsedUrl.port === ''
+                ? this.isPortAllowed(parsedUrl.protocol === 'http:' ? 80 : 443)
+                : this.isPortAllowed(Number(parsedUrl.port))
+            )
+            : {
+                allowed: false
+            };
+
         const isProtocolAllowed = this.isSchemeAllowed(parsedUrl.protocol)
 
-        if (isHostAllowed && isPortAllowed && isProtocolAllowed) {
+        if (isHostAllowed.allowed && isPortAllowed.allowed && isProtocolAllowed.allowed) {
             return this.result(AclClassification.AllowedUserAcl)
         }
 
