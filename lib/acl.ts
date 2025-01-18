@@ -29,7 +29,7 @@ export enum HttpRequestMethod {
     TRACE = 'TRACE',
 }
 
-interface AclClassificationResult {
+export interface AclClassificationResult {
     status: AclClassification
     details: string | null
     allowed: boolean
@@ -40,9 +40,10 @@ export class HttpAcl {
     allowHttps: boolean = true;
     allowMethodAclDefault: boolean = false;
 
-    allowPrivateIpRanges: boolean = true;
+    allowPrivateIpRanges: boolean = false;
+
     allowIpAclDefault: boolean = true;
-    allowPortAclDefault: boolean = true;
+    allowPortAclDefault: boolean = false;
     allowHostsAclDefault: boolean = true;
 
     allowUserNameOnUrl: boolean = false;
@@ -73,6 +74,14 @@ export class HttpAcl {
             HttpRequestMethod.TRACE,
         ];
         this.allowedPorts = [80, 443, 8080]
+        this.deniedPorts = [];
+
+        this.allowedHosts = [];
+        this.deniedHosts = [];
+
+        this.allowedIpAddress = [];
+        this.deniedIpAddress = [];
+
         this.deniedMethods = [];
     }
 
@@ -111,7 +120,7 @@ export class HttpAcl {
         }
 
         if (isprivateIp && !this.allowPrivateIpRanges) {
-            return this.result(AclClassification.DeniedUserAcl)
+            return this.result(AclClassification.DeniedPrivateRange)
         }
 
         if (this.allowIpAclDefault) {
@@ -171,10 +180,15 @@ export class HttpAcl {
     }
 
     private result(classification: AclClassification, details: string | null = null): AclClassificationResult {
+        const allowed =
+            classification === AclClassification.AllowedUserAcl ||
+            classification === AclClassification.AllowedDefault ||
+            classification === AclClassification.AllowPrivateRange;
+
         return {
             status: classification,
             details,
-            allowed: true
+            allowed
         }
     }
 
@@ -197,6 +211,21 @@ interface IhttpAclBuilder {
 
     allowedMethods(methods: HttpRequestMethod[]): HttpAclBuilder;
     deniedMethods(methods: HttpRequestMethod[]): HttpAclBuilder;
+
+    allowIpAclDefault(allow: boolean): HttpAclBuilder;
+    allowPortAclDefault(allow: boolean): HttpAclBuilder;
+    allowHostsAclDefault(allow: boolean): HttpAclBuilder;
+
+    allowUserNameOnUrl(allow: boolean): HttpAclBuilder;
+
+    allowedPorts(ports: number[]): HttpAclBuilder;
+    deniedPorts(ports: number[]): HttpAclBuilder;
+
+    allowedHosts(hosts: string[]): HttpAclBuilder;
+    deniedHosts(hosts: string[]): HttpAclBuilder;
+
+    allowedIpAddress(ips: string[]): HttpAclBuilder;
+    deniedIpAddress(ips: string[]): HttpAclBuilder;
 
     build(): HttpAcl
 }
@@ -237,6 +266,57 @@ export class HttpAclBuilder implements IhttpAclBuilder {
         this.acl.deniedMethods = methods;
         return this;
     }
+
+    allowedIpAddress(ips: string[]): HttpAclBuilder {
+        this.acl.allowedIpAddress = ips;
+        return this
+    }
+
+    deniedIpAddress(ips: string[]): HttpAclBuilder {
+        this.acl.deniedIpAddress = ips;
+        return this
+    }
+
+    allowedPorts(ports: number[]): HttpAclBuilder {
+        this.acl.allowedPorts = ports;
+        return this
+    }
+
+    deniedPorts(ports: number[]): HttpAclBuilder {
+        this.acl.deniedPorts = ports;
+        return this
+    }
+
+    allowUserNameOnUrl(allow: boolean): HttpAclBuilder {
+        this.acl.allowUserNameOnUrl = allow;
+        return this
+    }
+
+    allowHostsAclDefault(allow: boolean): HttpAclBuilder {
+        this.acl.allowHostsAclDefault = allow;
+        return this
+    }
+
+    allowPortAclDefault(allow: boolean): HttpAclBuilder {
+        this.acl.allowPortAclDefault = allow;
+        return this
+    }
+
+    allowIpAclDefault(allow: boolean): HttpAclBuilder {
+        this.acl.allowIpAclDefault = allow;
+        return this
+    }
+
+    allowedHosts(hosts: string[]): HttpAclBuilder {
+        this.acl.allowedHosts = hosts;
+        return this
+    }
+
+    deniedHosts(hosts: string[]): HttpAclBuilder {
+        this.acl.deniedHosts = hosts;
+        return this
+    }
+
 
     build(): HttpAcl {
         return this.acl
