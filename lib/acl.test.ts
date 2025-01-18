@@ -23,6 +23,58 @@ describe('host only acl', () => {
     });
 });
 
+describe('schema', () => {
+    it('should deny http', () => {
+        const acl = new HttpAclBuilder().http(false).build()
+        const result = acl.isSchemeAllowed("http")
+
+        expect(result.status).toBe(AclClassification.DeniedUserAcl);
+        expect(result.allowed).toBe(false);
+    });
+    it('should allow http', () => {
+        const acl = new HttpAclBuilder().http(true).build()
+        const result = acl.isSchemeAllowed("http")
+
+        expect(result.status).toBe(AclClassification.AllowedUserAcl);
+        expect(result.allowed).toBe(true);
+    });
+    it('should allow https', () => {
+        const acl = new HttpAclBuilder().https(true).build()
+        const result = acl.isSchemeAllowed("https")
+
+        expect(result.status).toBe(AclClassification.AllowedUserAcl);
+        expect(result.allowed).toBe(true);
+    });
+    it('should deny https', () => {
+        const acl = new HttpAclBuilder().https(false).build()
+        const result = acl.isSchemeAllowed("https")
+
+        expect(result.status).toBe(AclClassification.DeniedUserAcl);
+        expect(result.allowed).toBe(false);
+    });
+    it('should deny', () => {
+        const acl = new HttpAclBuilder().build()
+        const result = acl.isSchemeAllowed("ftp")
+
+        expect(result.status).toBe(AclClassification.DeniedUserAcl);
+        expect(result.allowed).toBe(false);
+    });
+    it('should deny http by default', () => {
+        const acl = new HttpAclBuilder().build()
+        const result = acl.isSchemeAllowed("http")
+
+        expect(result.status).toBe(AclClassification.DeniedUserAcl);
+        expect(result.allowed).toBe(false);
+    });
+    it('should allow https by default', () => {
+        const acl = new HttpAclBuilder().build()
+        const result = acl.isSchemeAllowed("https")
+
+        expect(result.status).toBe(AclClassification.AllowedUserAcl);
+        expect(result.allowed).toBe(true);
+    });
+});
+
 describe("private ip range", () => {
     it("acl show deny private ipv4", () => {
         const acl = new HttpAclBuilder().allowPrivateIpRanges(false).build();

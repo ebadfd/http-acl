@@ -1,20 +1,20 @@
 import { isPrivate } from "ip"
 
 export enum AclClassification {
-    // Allowed according to ACL
-    AllowedUserAcl,
-    // Fail open - because default is to allow when no match
-    AllowedDefault,
-    // Denied according to denied acl
-    DeniedUserAcl,
-    // Fail close - because default is to deny when no match
-    DeniedDefault,
-    // denied 
-    Denied,
-    // allow private range
-    AllowPrivateRange,
-    // IP is in private range
-    DeniedPrivateRange,
+    // Access is explicitly allowed based on the ACL rules
+    AllowedUserAcl = 'AllowedUserAcl',
+    // Default action is allowed when no specific ACL match is found
+    AllowedDefault = 'AllowedDefault',
+    // Access is explicitly denied based on the denied ACL rules
+    DeniedUserAcl = 'DeniedUserAcl',
+    // Default action is to deny when no specific ACL match is found
+    DeniedDefault = 'DeniedDefault',
+    // Access is simply denied
+    Denied = 'Denied',
+    // Access is allowed for private IP ranges
+    AllowPrivateRange = 'AllowPrivateRange',
+    // IP is located within a private range and should be denied
+    DeniedPrivateRange = 'DeniedPrivateRange'
 }
 
 export enum HttpRequestMethod {
